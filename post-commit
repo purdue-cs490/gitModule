@@ -1,0 +1,20 @@
+#!/usr/bin/env python
+
+import smtplib, os, requests
+from email.mime.text import MIMEText
+from subprocess import check_output
+
+# Get the git log --stat entry of the new commit
+log = check_output(['git', 'log', '-2', '--stat', 'HEAD'])
+elements = log.split(' ')
+counter = 0
+revision = 0
+for index in range(len(elements)):
+	if counter == 1 and 'commit' in elements[index]:
+		revision = index+1
+		break
+	if elements[index] == 'commit':
+		counter += 1
+payload = {'Repo':os.getcwd(), 'oldRevision':elements[revision].split( )[0], 'newRecision':elements[1].split( )[0]}
+r = requests.post('http://localhost/app/private/deploy/', params=payload)
+print "{}   {}   {}".format(os.getcwd(), elements[revision].split( )[0], elements[1].split( )[0])
